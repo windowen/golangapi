@@ -101,3 +101,11 @@ TMessagesProj	library	❌ 不应该
 TMessagesProj_App	application	✅ 应该放 google-services.json
 
 如果你想，我可以为你修改 TMessagesProj_App/build.gradle 的模板并提供最小可运行配置。只需告诉我是否使用了 Kotlin 或 Java 即可。
+
+
+34.0.0
+21.4.7075529
+jdk17
+
+34
+19
