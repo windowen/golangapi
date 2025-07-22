@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "127513078657",
+    "project_id": "cd8550telegram",
+    "storage_bucket": "cd8550telegram.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:127513078657:android:df55fa28ec71c43c6a1680",
+        "android_client_info": {
+          "package_name": "org.telegram9.messenger6.cd6.at20230704"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDx2QRh--u4RFXihiXV6R0v4eSplyiDot0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:127513078657:android:caf445c749e33b266a1680",
+        "android_client_info": {
+          "package_name": "org.telegram9.messenger6.cd6.at20230704.beta"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDx2QRh--u4RFXihiXV6R0v4eSplyiDot0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
