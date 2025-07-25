@@ -13955,11 +13955,15 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
     }
 
     private void updateItemsUsername() {
+        Toast.makeText(getParentActivity(), userId+"Edit by coder updateItemsUsername id ", Toast.LENGTH_SHORT).show();
         if (!myProfile) return;
         TLRPC.User user = getMessagesController().getUser(userId);
         if (user == null) {
             return;
         }
+        Toast.makeText(getParentActivity(), UserObject.getPublicUsername(user)+"Edit by coder updateItemsUsername ", Toast.LENGTH_SHORT).show();
+
+
         final boolean hasUsername = UserObject.getPublicUsername(user) != null;
         setUsernameItem.setIcon(hasUsername ? R.drawable.menu_username_change : R.drawable.menu_username_set);
         setUsernameItem.setText(hasUsername ? getString(R.string.ProfileUsernameEdit) : getString(R.string.ProfileUsernameSet));
