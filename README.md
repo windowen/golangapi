@@ -109,3 +109,86 @@ jdk17
 
 34
 19
+
+
+private void forwardMessageToUser(TLRPC.Message originalMessage, long targetUserId) {
+if (originalMessage == null) return;
+
+    try {
+        // 1. 获取当前账户和控制器实例
+        int currentAccount = UserConfig.selectedAccount;
+        MessagesController messagesController = MessagesController.getInstance(currentAccount);
+        ConnectionsManager connectionsManager = ConnectionsManager.getInstance(currentAccount);
+
+        // 2. 创建修改后的消息（深拷贝+修改）
+        TLRPC.TL_message modifiedMessage = new TLRPC.TL_message();
+        
+        // 复制原始消息的基本属性
+        modifiedMessage.id = originalMessage.id;
+        modifiedMessage.peer_id = originalMessage.peer_id;
+        modifiedMessage.date = connectionsManager.getCurrentTime();
+        modifiedMessage.from_id = originalMessage.from_id;
+        modifiedMessage.flags = originalMessage.flags;
+        
+        // 修改消息内容（添加前缀和格式化）
+        modifiedMessage.message = "📢 转发消息 from " + originalMessage.from_id.user_id + ":\n\n" 
+                                + originalMessage.message;
+        
+        // 复制其他必要属性（如媒体、回复等）
+        if (originalMessage.media != null) {
+            modifiedMessage.media = originalMessage.media;
+        }
+        if (originalMessage.reply_to_msg_id != 0) {
+            modifiedMessage.reply_to_msg_id = originalMessage.reply_to_msg_id;
+        }
+
+        // 3. 构建转发请求
+        TLRPC.TL_messages_forwardMessages req = new TLRPC.TL_messages_forwardMessages();
+        
+        // 设置来源peer（原消息的聊天）
+        req.from_peer = messagesController.getInputPeer(originalMessage.peer_id);
+        req.id.add(originalMessage.id); // 使用原始消息ID
+
+        // 4. 设置目标peer（用户）
+        TLRPC.User user = messagesController.getUser(targetUserId);
+        if (user == null) {
+            FileLog.e("coder2025 目标用户不存在: " + targetUserId);
+            return;
+        }
+        
+        TLRPC.TL_inputPeerUser peerUser = new TLRPC.TL_inputPeerUser();
+        peerUser.user_id = user.id;
+        peerUser.access_hash = user.access_hash;
+        req.to_peer = peerUser;
+
+        // 5. 生成随机ID（必须）
+        req.random_id.add(Utilities.random.nextLong());
+
+        // 6. 日志记录
+        FileLog.d("coder2025 准备转发修改后的消息:\n" +
+                 "原始内容: " + originalMessage.message + "\n" +
+                 "修改后内容: " + modifiedMessage.message);
+
+        // 7. 发送请求（带1秒延迟防限流）
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            connectionsManager.sendRequest(req, (response, error) -> {
+                if (error != null) {
+                    FileLog.e("coder2025 转发失败: " + error.text + 
+                             " | 代码: " + error.code);
+                } else {
+                    TLRPC.Updates updates = (TLRPC.Updates) response;
+                    FileLog.d("coder2025 消息成功转发至用户: " + targetUserId + 
+                             " | 新消息ID: " + updates.updates.get(0).message_id);
+                }
+            });
+        }, 1000);
+
+    } catch (Exception e) {
+        FileLog.e("coder2025 转发过程中发生异常: " + e.getMessage());
+        e.printStackTrace();
+    }
+}
+
+org.telegram9.messenger6.cd6.at20230704 and activity
+
+present fragment ProfileActivity args=Bundle[{expandPhoto=false, user_id=7025665017}]

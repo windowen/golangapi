@@ -25224,55 +25224,57 @@ public class TLRPC {
         }
     }
 
-    public static abstract class User extends TLObject {
-        public long id;
-        public String first_name;
-        public String last_name;
-        public String username;
-        public long access_hash;
-        public String phone;
-        public UserProfilePhoto photo;
-        public UserStatus status;
-        public int flags;
-        public int flags2;
-        public boolean self;
-        public boolean contact;
-        public boolean mutual_contact;
-        public boolean deleted;
-        public boolean bot;
-        public boolean bot_chat_history;
-        public boolean bot_nochats;
-        public boolean bot_can_edit;
-        public boolean bot_business;
-        public boolean bot_has_main_app;
-        public boolean verified;
-        public boolean restricted;
-        public boolean min;
-        public boolean bot_inline_geo;
-        public boolean support;
-        public boolean scam;
-        public boolean apply_min_photo;
-        public boolean fake;
-        public boolean premium;
-        public boolean close_friend;
-        public boolean stories_unavailable;
-        public boolean stories_hidden;
-        public boolean contact_require_premium;
-        public int bot_info_version;
-        public String bot_inline_placeholder;
-        public String lang_code;
-        public boolean inactive;
-        public boolean explicit_content;
-        public ArrayList<RestrictionReason> restriction_reason = new ArrayList<>();
-        public boolean bot_attach_menu;
-        public boolean bot_menu_webview;
-        public boolean attach_menu_enabled;
-        public EmojiStatus emoji_status;
-        public ArrayList<TL_username> usernames = new ArrayList<>();
-        public int stories_max_id;
-        public TL_peerColor color;
-        public TL_peerColor profile_color;
-        public int bot_active_users;
+    public static class User extends TLObject {
+            public long id;                          // 用户唯一ID（正数）
+            public String first_name;                // 名字（可能为空，取决于隐私设置）
+            public String last_name;                 // 姓氏（同上）
+            public String username;                  // @用户名（不含@符号，例如"durov"）
+            public long access_hash;                 // 访问哈希（用于敏感操作鉴权）
+            public String phone;                     // 手机号（国际格式，如"+123456789"）
+            public UserProfilePhoto photo;           // 头像信息（null表示无头像）
+            public UserStatus status;                // 在线状态（UserStatusEmpty/UserStatusOnline等）
+            public int flags;                        // 主标志位（二进制位存储基础属性）
+            public int flags2;                       // 扩展标志位（新功能补充）
+            public boolean self;                     // 是否是当前登录用户（flags & 0x00000010）
+            public boolean contact;                  // 是否在通讯录中（flags & 0x00000020）
+            public boolean mutual_contact;           // 是否双向联系人（flags & 0x00000040）
+            public boolean deleted;                  // 账户是否已注销（flags & 0x00000080）
+            public boolean bot;                      // 是否是机器人（flags & 0x00000100）
+            public boolean bot_chat_history;         // 是否显示机器人聊天历史（flags & 0x00000200）
+            public boolean bot_nochats;              // 是否禁止添加到群组（flags & 0x00000400）
+            public boolean verified;                 // 官方认证（flags & 0x00000800）
+            public boolean restricted;               // 是否被限制（flags & 0x00001000）
+            public boolean min;                      // 是否为精简版用户信息（flags & 0x00002000）
+            public boolean bot_inline_geo;           // 是否支持内联地理位置（flags & 0x00004000）
+            public boolean support;                  // 是否是官方支持账号（flags & 0x00008000）
+            public boolean scam;                     // 是否是诈骗账号（flags & 0x00010000）
+            public boolean apply_min_photo;          // [已废弃]历史字段（flags & 0x00020000）
+            public boolean fake;                     // 是否是伪造账号（flags & 0x00040000）
+            public boolean premium;                  // 是否Premium用户（flags & 0x00080000）
+            public boolean close_friend;             // 是否在"亲密朋友"列表（flags & 0x00100000）
+            public boolean stories_unavailable;      // 是否无法查看Stories（flags & 0x00200000）
+            public boolean stories_hidden;           // 是否隐藏Stories（flags & 0x00400000）
+            public boolean contact_require_premium;  // 是否需要Premium才能发消息（flags & 0x00800000）
+            public int bot_info_version;             // 机器人信息版本号（仅bot为true时有效）
+            public String bot_inline_placeholder;    // 内联查询占位文本（如"输入查询内容"）
+            public String lang_code;                 // 语言代码（如"en"、"zh"等）
+            public boolean inactive;                 // 是否长时间未活跃（flags2 & 0x00000001）
+            public boolean explicit_content;         // 是否标记为敏感内容（flags2 & 0x00000002）
+            public ArrayList<RestrictionReason> restriction_reason = new ArrayList<>(); // 限制原因列表
+            public boolean bot_attach_menu;          // 是否显示附件菜单（flags2 & 0x00000004）
+            public boolean bot_menu_webview;         // 是否支持WebView菜单（flags2 & 0x00000008）
+            public boolean attach_menu_enabled;      // 是否启用附件菜单（flags2 & 0x00000010）
+            public EmojiStatus emoji_status;         // 表情状态（Premium功能，null表示未设置）
+            public ArrayList<TL_username> usernames = new ArrayList<>(); // 用户名列表（含活跃/非活跃状态）
+            public int stories_max_id;               // 最新Story ID（0表示无Stories）
+            public TL_peerColor color;               // 聊天颜色配置（null表示默认）
+            public TL_peerColor profile_color;       // 个人资料颜色配置（null表示默认）
+            public boolean bot_can_edit;             // 是否允许编辑机器人指令（flags2 & 0x00000020）
+            public boolean bot_business;             // 是否是商业机器人（flags2 & 0x00000040）
+            public boolean bot_has_main_app;         // 是否有主应用绑定（flags2 & 0x00000080）
+            public int bot_active_users;             // 机器人活跃用户数（仅开发者可见）
+
+
 
         public static User TLdeserialize(AbstractSerializedData stream, int constructor, boolean exception) {
             User result = null;
