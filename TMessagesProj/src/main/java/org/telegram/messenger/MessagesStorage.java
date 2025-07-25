@@ -467,6 +467,7 @@ public class MessagesStorage extends BaseController {
             "botcache",
             "users_data",
             "users",
+            "chats_info",
             "chats",
             "enc_chats",
             "channel_users_v2",
@@ -602,6 +603,8 @@ public class MessagesStorage extends BaseController {
 
         database.executeFast("CREATE TABLE users_data(uid INTEGER PRIMARY KEY, about TEXT)").stepThis().dispose();
         database.executeFast("CREATE TABLE users(uid INTEGER PRIMARY KEY, name TEXT, status INTEGER, data BLOB)").stepThis().dispose();
+        //准备增加一个表。用来存储需要采集的群号和转发的机器人的id
+        database.executeFast("CREATE TABLE chats_info(id INTEGER PRIMARY KEY, name TEXT, name_id TEXT, type INTEGER,status INTEGER)").stepThis().dispose();
         database.executeFast("CREATE TABLE chats(uid INTEGER PRIMARY KEY, name TEXT, data BLOB)").stepThis().dispose();
         database.executeFast("CREATE TABLE enc_chats(uid INTEGER PRIMARY KEY, user INTEGER, name TEXT, data BLOB, g BLOB, authkey BLOB, ttl INTEGER, layer INTEGER, seq_in INTEGER, seq_out INTEGER, use_count INTEGER, exchange_id INTEGER, key_date INTEGER, fprint INTEGER, fauthkey BLOB, khash BLOB, in_seq_no INTEGER, admin_id INTEGER, mtproto_seq INTEGER)").stepThis().dispose();
         database.executeFast("CREATE TABLE channel_users_v2(did INTEGER, uid INTEGER, date INTEGER, data BLOB, PRIMARY KEY(did, uid))").stepThis().dispose();
