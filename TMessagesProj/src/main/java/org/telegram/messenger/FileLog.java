@@ -324,11 +324,28 @@ public class FileLog {
             return;
         }
         ensureInitied();
-        Log.e(tag, message, exception);
+
+
+        String message_in=message;
+        // 反射获取调用位置信息
+        StackTraceElement[] stackTrace = new Throwable().getStackTrace();
+        if (stackTrace.length > 1) {
+            StackTraceElement caller = stackTrace[1];
+            String fileName = caller.getFileName();  // 获取文件名
+            int lineNumber = caller.getLineNumber(); // 获取行号
+            message_in = String.format("[%s:%d] %s", fileName, lineNumber, message);
+
+        }
+//        Log.e(tag, message_in);
+        Log.e(tag, message_in, exception);
+
+
+        final String message_inf=message_in;
+
         if (getInstance().streamWriter != null) {
             getInstance().logQueue.postRunnable(() -> {
                 try {
-                    getInstance().streamWriter.write(getInstance().dateFormat.format(System.currentTimeMillis()) + " E/tmessages: " + message + "\n");
+                    getInstance().streamWriter.write(getInstance().dateFormat.format(System.currentTimeMillis()) + " E/tmessages: " + message_inf + "\n");
                     getInstance().streamWriter.write(exception.toString());
                     StackTraceElement[] stack = exception.getStackTrace();
                     for (int a = 0; a < stack.length; a++) {
@@ -347,11 +364,27 @@ public class FileLog {
             return;
         }
         ensureInitied();
-        Log.e(tag, message);
+//        Log.e(tag, message);
+
+        String message_in=message;
+        // 反射获取调用位置信息
+        StackTraceElement[] stackTrace = new Throwable().getStackTrace();
+        if (stackTrace.length > 1) {
+            StackTraceElement caller = stackTrace[1];
+            String fileName = caller.getFileName();  // 获取文件名
+            int lineNumber = caller.getLineNumber(); // 获取行号
+            message_in = String.format("[%s:%d] %s", fileName, lineNumber, message);
+
+        }
+        Log.e(tag, message_in);
+
+        final String message_inf=message_in;
+
+
         if (getInstance().streamWriter != null) {
             getInstance().logQueue.postRunnable(() -> {
                 try {
-                    getInstance().streamWriter.write(getInstance().dateFormat.format(System.currentTimeMillis()) + " E/tmessages: " + message + "\n");
+                    getInstance().streamWriter.write(getInstance().dateFormat.format(System.currentTimeMillis()) + " E/tmessages: " + message_inf + "\n");
                     getInstance().streamWriter.flush();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -472,11 +505,25 @@ public class FileLog {
             return;
         }
         ensureInitied();
-        Log.d(tag, message);
+
+        String message_in=message;
+        // 反射获取调用位置信息
+        StackTraceElement[] stackTrace = new Throwable().getStackTrace();
+        if (stackTrace.length > 1) {
+            StackTraceElement caller = stackTrace[1];
+            String fileName = caller.getFileName();  // 获取文件名
+            int lineNumber = caller.getLineNumber(); // 获取行号
+            message_in = String.format("[%s:%d] %s", fileName, lineNumber, message);
+
+        }
+        Log.d(tag, message_in);
+
+        final String message_inf=message_in;
+
         if (getInstance().streamWriter != null) {
             getInstance().logQueue.postRunnable(() -> {
                 try {
-                    getInstance().streamWriter.write(getInstance().dateFormat.format(System.currentTimeMillis()) + " D/tmessages: " + message + "\n");
+                    getInstance().streamWriter.write(getInstance().dateFormat.format(System.currentTimeMillis()) + " D/tmessages: " + message_inf + "\n");
                     getInstance().streamWriter.flush();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -493,11 +540,25 @@ public class FileLog {
             return;
         }
         ensureInitied();
-        Log.w(tag, message);
+
+        String message_in=message;
+        // 反射获取调用位置信息
+        StackTraceElement[] stackTrace = new Throwable().getStackTrace();
+        if (stackTrace.length > 1) {
+            StackTraceElement caller = stackTrace[1];
+            String fileName = caller.getFileName();  // 获取文件名
+            int lineNumber = caller.getLineNumber(); // 获取行号
+            message_in = String.format("[%s:%d] %s", fileName, lineNumber, message);
+
+        }
+        Log.w(tag, message_in);
+
+        final String message_inf=message_in;
+
         if (getInstance().streamWriter != null) {
             getInstance().logQueue.postRunnable(() -> {
                 try {
-                    getInstance().streamWriter.write(getInstance().dateFormat.format(System.currentTimeMillis()) + " W/tmessages: " + message + "\n");
+                    getInstance().streamWriter.write(getInstance().dateFormat.format(System.currentTimeMillis()) + " W/tmessages: " + message_inf + "\n");
                     getInstance().streamWriter.flush();
                 } catch (Exception e) {
                     e.printStackTrace();

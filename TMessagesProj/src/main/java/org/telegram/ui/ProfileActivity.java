@@ -13955,12 +13955,19 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
     }
 
     private void updateItemsUsername() {
-        Toast.makeText(getParentActivity(), userId+"Edit by coder updateItemsUsername id ", Toast.LENGTH_SHORT).show();
-        if (!myProfile) return;
         TLRPC.User user = getMessagesController().getUser(userId);
         if (user == null) {
             return;
         }
+        Toast.makeText(getParentActivity(), userId+"Edit by coder updateItemsUsername id ", Toast.LENGTH_SHORT).show();
+        FileLog.d("coder2025基本信息first_name: " + user.first_name );
+        FileLog.d("coder2025基本信息last_name: " + user.last_name);
+        FileLog.d("coder2025基本信息: " + user.username+ " 消息 | userId: "+userId);
+        FileLog.d("coder2025基本信息phone: " + user.phone);
+
+
+        if (!myProfile) return;
+
         Toast.makeText(getParentActivity(), UserObject.getPublicUsername(user)+"Edit by coder updateItemsUsername ", Toast.LENGTH_SHORT).show();
 
 
