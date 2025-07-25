@@ -1337,7 +1337,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
     }
 
     public void checkSystemBarColors(boolean useCurrentFragment, boolean checkStatusBar, boolean checkNavigationBar, boolean checkButtons) {
-        Toast.makeText(this, "Edit by coder checkSystemBarColors", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Edit by coder checkSystemBarColors", Toast.LENGTH_SHORT).show();
 
         BaseFragment currentFragment = !mainFragmentsStack.isEmpty() ? mainFragmentsStack.get(mainFragmentsStack.size() - 1) : null;
         if (currentFragment != null && (currentFragment.isRemovingFromStack() || currentFragment.isInPreviewMode())) {
