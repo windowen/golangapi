@@ -16751,8 +16751,8 @@ public class MessagesController extends BaseController implements NotificationCe
                     message = ((TLRPC.TL_updateNewChannelMessage) baseUpdate).message;
                     if (message != null) {
                         fromId = message.from_id.user_id;
-                        chatIdFrom = message.peer_id.chat_id;  // 普通群组的 chat_id
-                        FileLog.d("coder2025收到普通消息: " + message.message+ " 消息 | 来自ID: " + fromId+ " | 群组ID: " + chatIdFrom);
+//                        chatIdFrom = message.peer_id.chat_id;  // 普通群组的 chat_id
+//                        FileLog.d("coder2025收到普通消息: " + message.message+ " 消息 | 来自ID: " + fromId+ " | 群组ID: " + chatIdFrom);
 
                         chatIdFrom = message.peer_id.channel_id;  // 频道的 channel_id（注意字段不同！）
                         FileLog.d("coder2025收到普通消息channel_id: " + message.message+ " 消息 | 来自ID: " + fromId+ " | 群组ID: " + chatIdFrom);
@@ -16793,7 +16793,11 @@ public class MessagesController extends BaseController implements NotificationCe
                     TLRPC.Chat chat = getChat(chatIdFrom);
                     if (chat != null) {
                         FileLog.d("coder2025群组名称: " + chat.title+ " chat.username = " + chat.username);
+//                        if (chat.exported_invite != null ){
+//                            FileLog.d("coder2025群组邀请链接: " + chat.exported_invite.link);
+//                        }
                     }
+
                 }
                 if (message instanceof TLRPC.TL_messageEmpty) {
                     continue;
