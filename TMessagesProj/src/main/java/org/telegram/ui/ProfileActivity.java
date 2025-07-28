@@ -4057,6 +4057,9 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             } else if (position == languageRow) {
                 Toast.makeText(getParentActivity(), "Edit by coder languageRow ", Toast.LENGTH_LONG).show();
                 presentFragment(new LanguageSelectActivity());
+            } else if (position == botsRow) {
+                Toast.makeText(getParentActivity(), "Edit by coder botsRow ", Toast.LENGTH_LONG).show();
+                presentFragment(new ChatsInfoFragment());
             } else if (position == setUsernameRow) {
                 presentFragment(new ChangeUsernameActivity());
             } else if (position == bioRow) {
@@ -13964,7 +13967,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
         FileLog.d("coder2025基本信息last_name: " + user.last_name);
         FileLog.d("coder2025基本信息: " + user.username+ " 消息 | userId: "+userId);
         FileLog.d("coder2025基本信息phone: " + user.phone);
-
+//        presentFragment(new ChatsInfoFragment());
 
         if (!myProfile) return;
 
