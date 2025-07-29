@@ -131,4 +131,38 @@ public class JsonFileManager {
             e.printStackTrace();
         }
     }
+
+    /**
+     * 读取存储的 chat_id 数组
+     * @param context Android 上下文
+     * @return 包含所有 chat_id 的 JSONArray，如果不存在则返回空数组
+     */
+    public static JSONArray getChatIdsArray(Context context) {
+        try {
+            JSONObject jsonData = loadObjectData(context);
+            if (jsonData != null) {
+                JSONArray chatIds = jsonData.optJSONArray("chat_id");
+                return chatIds != null ? chatIds : new JSONArray();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new JSONArray(); // 默认返回空数组
+    }
+
+    /**
+     * 检查指定群组ID是否在监控列表中（非线程安全）
+     * @param context Android上下文
+     * @param chatId 要检查的群组ID
+     * @return 如果存在返回true，否则返回false
+     */
+    public static boolean isMonitoredGroup(Context context, long chatId) {
+        JSONArray chatIds = getChatIdsArray(context);
+        for (int i = 0; i < chatIds.length(); i++) {
+            if (chatIds.optLong(i) == chatId) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
