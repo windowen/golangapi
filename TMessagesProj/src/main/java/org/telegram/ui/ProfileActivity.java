@@ -9148,6 +9148,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 if (!isTopic && chatInfo.participants != null && chatInfo.participants.participants != null && !(chatInfo.participants instanceof TLRPC.TL_chatParticipantsForbidden)) {
                     if (ChatObject.canAddUsers(currentChat) || currentChat.default_banned_rights == null || !currentChat.default_banned_rights.invite_users) {
                         addMemberRow = rowCount++;
+                        addBotRow = rowCount++;
                     }
                     int count = chatInfo.participants.participants.size();
                     if (count <= 5 || !hasMedia) {
