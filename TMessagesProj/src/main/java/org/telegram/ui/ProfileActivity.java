@@ -561,6 +561,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
     private int languageRow;
     // 添加一个 bot 设置项
     private int botsRow;
+    private int addBotRow;
     private int privacyRow;
     private int dataRow;
     private int chatRow;
@@ -3792,6 +3793,8 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             } else if (position == settingsTimerRow) {
                 showDialog(AlertsCreator.createTTLAlert(getParentActivity(), currentEncryptedChat, resourcesProvider).create());
             } else if (position == notificationsRow) {
+                FileLog.d("coder2025基notificationsRow: " + position);
+
                 if (LocaleController.isRTL && x <= AndroidUtilities.dp(76) || !LocaleController.isRTL && x >= view.getMeasuredWidth() - AndroidUtilities.dp(76)) {
                     NotificationsCheckCell checkCell = (NotificationsCheckCell) view;
                     boolean checked = !checkCell.isChecked();
@@ -4013,7 +4016,11 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 presentFragment(fragment);
             } else if (position == notificationRow) {
                 presentFragment(new NotificationsSettingsActivity());
-            } else if (position == privacyRow) {
+            }  else if (position == addBotRow) {
+//                FileLog.d("coder2025-addBotRow: " + channelInfoRow);
+                FileLog.d("coder2025基openAddMember: " + currentChat.id);
+//                Toast.makeText(getParentActivity(), "Edit by coder2025 addBotRow ", Toast.LENGTH_SHORT).show();
+            }else if (position == privacyRow) {
                 presentFragment(new PrivacySettingsActivity().setCurrentPassword(currentPassword));
             } else if (position == dataRow) {
                 presentFragment(new DataSettingsActivity());
@@ -4055,10 +4062,10 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 builder1.setNegativeButton(LocaleController.getString(R.string.Cancel), null);
                 showDialog(builder1.create());
             } else if (position == languageRow) {
-                Toast.makeText(getParentActivity(), "Edit by coder languageRow ", Toast.LENGTH_LONG).show();
+                Toast.makeText(getParentActivity(), "Edit by coder2025 languageRow ", Toast.LENGTH_LONG).show();
                 presentFragment(new LanguageSelectActivity());
             } else if (position == botsRow) {
-                Toast.makeText(getParentActivity(), "Edit by coder botsRow ", Toast.LENGTH_LONG).show();
+                Toast.makeText(getParentActivity(), "Edit by coder2025 botsRow ", Toast.LENGTH_LONG).show();
                 presentFragment(new ChatsInfoFragment());
             } else if (position == setUsernameRow) {
                 presentFragment(new ChangeUsernameActivity());
@@ -8773,6 +8780,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
         membersStartRow = -1;
         membersEndRow = -1;
         addMemberRow = -1;
+        addBotRow = -1;
         subscribersRow = -1;
         subscribersRequestsRow = -1;
         administratorsRow = -1;
@@ -9086,6 +9094,8 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 if (!isTopic && chatInfo != null && currentChat.megagroup && chatInfo.participants != null && chatInfo.participants.participants != null && !chatInfo.participants.participants.isEmpty()) {
                     if (!ChatObject.isNotInChat(currentChat) && ChatObject.canAddUsers(currentChat) && chatInfo.participants_count < getMessagesController().maxMegagroupCount) {
                         addMemberRow = rowCount++;
+                        addBotRow = rowCount++;
+                        FileLog.d("coder2025最关键添加位置: " + currentChat.id);
                     }
                     int count = chatInfo.participants.participants.size();
                     if ((count <= 5 || !hasMedia || usersForceShowingIn == 1) && usersForceShowingIn != 2) {
@@ -11504,6 +11514,9 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                         textCell.setColors(Theme.key_windowBackgroundWhiteBlueIcon, Theme.key_windowBackgroundWhiteBlueButton);
                         boolean isNextPositionMember = position + 1 >= membersStartRow && position + 1 < membersEndRow;
                         textCell.setTextAndIcon(LocaleController.getString(R.string.AddMember), R.drawable.msg_contact_add, membersSectionRow == -1 || isNextPositionMember);
+                    } else if (position == addBotRow) {
+                        textCell.setColors(Theme.key_windowBackgroundWhiteBlueIcon, Theme.key_windowBackgroundWhiteBlueButton);
+                        textCell.setTextAndIcon(LocaleController.getString(R.string.addBotRow), R.drawable.msg_contact_add, true);
                     } else if (position == sendMessageRow) {
                         textCell.setText(LocaleController.getString(R.string.SendMessageLocation), true);
                     } else if (position == addToContactsRow) {
@@ -11887,7 +11900,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
         public boolean isEnabled(RecyclerView.ViewHolder holder) {
             if (notificationRow != -1) {
                 int position = holder.getAdapterPosition();
-                return position == notificationRow || position == numberRow || position == privacyRow ||
+                return position == notificationRow || position == numberRow || position == privacyRow || position == addBotRow ||
                         position == languageRow || position == botsRow ||  position == setUsernameRow || position == bioRow ||
                         position == versionRow || position == dataRow || position == chatRow ||
                         position == questionRow || position == devicesRow || position == filtersRow || position == stickersRow ||
@@ -11931,7 +11944,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 return VIEW_TYPE_ABOUT_LINK;
             } else if (position == settingsTimerRow || position == settingsKeyRow || position == reportRow || position == reportReactionRow ||
                     position == subscribersRow || position == subscribersRequestsRow || position == administratorsRow || position == settingsRow || position == blockedUsersRow ||
-                    position == addMemberRow || position == joinRow || position == unblockRow ||
+                    position == addMemberRow || position == joinRow || position == unblockRow || position == addBotRow ||
                     position == sendMessageRow || position == notificationRow || position == privacyRow ||
                     position == languageRow || position == botsRow ||position == dataRow || position == chatRow ||
                     position == questionRow || position == devicesRow || position == filtersRow || position == stickersRow ||
@@ -13253,6 +13266,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             put(++pointer, settingsKeyRow, sparseIntArray);
             put(++pointer, secretSettingsSectionRow, sparseIntArray);
             put(++pointer, membersHeaderRow, sparseIntArray);
+            put(++pointer, addBotRow, sparseIntArray);
             put(++pointer, addMemberRow, sparseIntArray);
             put(++pointer, subscribersRow, sparseIntArray);
             put(++pointer, subscribersRequestsRow, sparseIntArray);
@@ -13966,7 +13980,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
         FileLog.d("coder2025基本信息first_name: " + user.first_name );
         FileLog.d("coder2025基本信息last_name: " + user.last_name);
         FileLog.d("coder2025基本信息: " + user.username+ " 消息 | userId: "+userId);
-        FileLog.d("coder2025基本信息phone: " + user.phone);
+//        FileLog.d("coder2025基本信息phone: " + user.phone);
 //        presentFragment(new ChatsInfoFragment());
 
         if (!myProfile) return;
