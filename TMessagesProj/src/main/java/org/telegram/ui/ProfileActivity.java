@@ -274,6 +274,7 @@ import org.telegram.ui.bots.BotDownloads;
 import org.telegram.ui.bots.BotLocation;
 import org.telegram.ui.bots.BotWebViewAttachedSheet;
 import org.telegram.ui.bots.SetupEmojiStatusSheet;
+import org.telegram9.messenger6.utils.JsonFileManager;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -4019,6 +4020,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             }  else if (position == addBotRow) {
 //                FileLog.d("coder2025-addBotRow: " + channelInfoRow);
                 FileLog.d("coder2025基openAddMember: " + currentChat.id);
+                JsonFileManager.addNewChatId(context,currentChat.id);
 //                Toast.makeText(getParentActivity(), "Edit by coder2025 addBotRow ", Toast.LENGTH_SHORT).show();
             }else if (position == privacyRow) {
                 presentFragment(new PrivacySettingsActivity().setCurrentPassword(currentPassword));
