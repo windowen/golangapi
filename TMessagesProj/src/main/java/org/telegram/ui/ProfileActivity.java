@@ -9071,6 +9071,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                         subscribersRequestsRow = rowCount++;
                     }
                     administratorsRow = rowCount++;
+                    addBotRow = rowCount++;
                     if (chatInfo != null && (chatInfo.banned_count != 0 || chatInfo.kicked_count != 0)) {
                         blockedUsersRow = rowCount++;
                     }
