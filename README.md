@@ -39,6 +39,15 @@ You will require Android Studio 3.4, Android NDK rev. 20 and Android SDK 8.1
 We moved all translations to https://translations.telegram.org/en/android/. Please use it.
 
 
+keytool -genkeypair -v \
+-keystore myapp.jks \
+-keyalg RSA -keysize 2048 \
+-validity 10000 \
+-alias mykey \
+-storepass @123456 \
+-keypass @123456 \
+-dname "CN=Your Name, OU=Dev, O=Company, L=City, ST=State, C=Country"
+
 
 正确解决方案
 ⚠️ 你 不能 把 google-services.json 和 com.google.gms.google-services 插件放在 TMessagesProj（Library）模块里。

@@ -46,15 +46,16 @@ android {
         coreLibraryDesugaringEnabled true
     }
 
+
     signingConfigs {
-        debug {
-            storeFile file("../TMessagesProj/config/release.keystore")
-            storePassword RELEASE_STORE_PASSWORD
-            keyAlias RELEASE_KEY_ALIAS
-            keyPassword RELEASE_KEY_PASSWORD
+        release {
+            storeFile file("myapp.jks")  // 建议至少使用项目相对路径
+            storePassword "@123456"        // 明文密码
+            keyAlias "mykey"
+            keyPassword "@123456"          // 明文密码
         }
 
-        release {
+        debug {
             storeFile file("../TMessagesProj/config/release.keystore")
             storePassword RELEASE_STORE_PASSWORD
             keyAlias RELEASE_KEY_ALIAS
@@ -160,7 +161,10 @@ android {
 
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
-            outputFileName = "app.apk"
+            def date = new Date()
+            def formattedDate = date.format('yyyyMMdd_HHmmss')
+            def versionName = variant.versionName ?: defaultConfig.versionName
+            outputFileName = "app_${versionName}_${formattedDate}.apk"
             output.versionCodeOverride = defaultConfig.versionCode * 10 + variant.productFlavors.get(0).abiVersionCode
         }
     }
