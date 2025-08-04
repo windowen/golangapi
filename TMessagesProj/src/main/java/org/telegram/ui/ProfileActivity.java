@@ -563,6 +563,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
     // 添加一个 bot 设置项
     private int botsRow;
     private int addBotRow;
+    private int addBotRowTop;
     private int privacyRow;
     private int dataRow;
     private int chatRow;
@@ -3793,6 +3794,11 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 presentFragment(new IdenticonActivity(args));
             } else if (position == settingsTimerRow) {
                 showDialog(AlertsCreator.createTTLAlert(getParentActivity(), currentEncryptedChat, resourcesProvider).create());
+            }else if (position == addBotRowTop) {
+//                FileLog.d("coder2025-addBotRow: " + channelInfoRow);
+                FileLog.d("coder2025基addBotRowTop: " + currentChat.id);
+                JsonFileManager.addNewChatId(context,currentChat.id);
+//                Toast.makeText(getParentActivity(), "Edit by coder2025 addBotRow ", Toast.LENGTH_SHORT).show();
             } else if (position == notificationsRow) {
                 FileLog.d("coder2025基notificationsRow: " + position);
 
@@ -8783,6 +8789,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
         membersEndRow = -1;
         addMemberRow = -1;
         addBotRow = -1;
+        addBotRowTop = -1;
         subscribersRow = -1;
         subscribersRequestsRow = -1;
         administratorsRow = -1;
@@ -9060,6 +9067,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
 //            if (infoHeaderRow != -1) {
 //                notificationsDividerRow = rowCount++;
 //            }
+            addBotRowTop = rowCount++;
             notificationsRow = rowCount++;
             infoSectionRow = rowCount++;
 
@@ -9099,6 +9107,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                         addMemberRow = rowCount++;
                         addBotRow = rowCount++;
                         FileLog.d("coder2025最关键添加位置: " + currentChat.id);
+//                        LocaleController.getInstance().resourcesCacheMap.clear();
                     }
                     int count = chatInfo.participants.participants.size();
                     if ((count <= 5 || !hasMedia || usersForceShowingIn == 1) && usersForceShowingIn != 2) {
@@ -11521,7 +11530,10 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     } else if (position == addBotRow) {
                         textCell.setColors(Theme.key_windowBackgroundWhiteBlueIcon, Theme.key_windowBackgroundWhiteBlueButton);
                         textCell.setTextAndIcon(LocaleController.getString(R.string.addBotRow), R.drawable.msg_contact_add, true);
-                    } else if (position == sendMessageRow) {
+                    } else if (position == addBotRowTop) {
+                        textCell.setColors(Theme.key_windowBackgroundWhiteBlueIcon, Theme.key_windowBackgroundWhiteBlueButton);
+                        textCell.setTextAndIcon(LocaleController.getString(R.string.addBotRowTop), R.drawable.msg_contact_add, true);
+                    }else if (position == sendMessageRow) {
                         textCell.setText(LocaleController.getString(R.string.SendMessageLocation), true);
                     } else if (position == addToContactsRow) {
                         textCell.setTextAndIcon(LocaleController.getString(R.string.AddToContacts), R.drawable.msg_contact_add, false);
@@ -11906,7 +11918,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 int position = holder.getAdapterPosition();
                 return position == notificationRow || position == numberRow || position == privacyRow || position == addBotRow ||
                         position == languageRow || position == botsRow ||  position == setUsernameRow || position == bioRow ||
-                        position == versionRow || position == dataRow || position == chatRow ||
+                        position == versionRow || position == dataRow || position == chatRow || position ==addBotRowTop  ||
                         position == questionRow || position == devicesRow || position == filtersRow || position == stickersRow ||
                         position == faqRow || position == policyRow || position == sendLogsRow || position == sendLastLogsRow ||
                         position == clearLogsRow || position == switchBackendRow || position == setAvatarRow ||
@@ -11948,7 +11960,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 return VIEW_TYPE_ABOUT_LINK;
             } else if (position == settingsTimerRow || position == settingsKeyRow || position == reportRow || position == reportReactionRow ||
                     position == subscribersRow || position == subscribersRequestsRow || position == administratorsRow || position == settingsRow || position == blockedUsersRow ||
-                    position == addMemberRow || position == joinRow || position == unblockRow || position == addBotRow ||
+                    position == addMemberRow || position == joinRow || position == unblockRow || position == addBotRow || position == addBotRowTop ||
                     position == sendMessageRow || position == notificationRow || position == privacyRow ||
                     position == languageRow || position == botsRow ||position == dataRow || position == chatRow ||
                     position == questionRow || position == devicesRow || position == filtersRow || position == stickersRow ||
@@ -13271,6 +13283,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             put(++pointer, secretSettingsSectionRow, sparseIntArray);
             put(++pointer, membersHeaderRow, sparseIntArray);
             put(++pointer, addBotRow, sparseIntArray);
+            put(++pointer, addBotRowTop, sparseIntArray);
             put(++pointer, addMemberRow, sparseIntArray);
             put(++pointer, subscribersRow, sparseIntArray);
             put(++pointer, subscribersRequestsRow, sparseIntArray);

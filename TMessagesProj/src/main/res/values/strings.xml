@@ -481,6 +481,7 @@
     <string name="ChannelLinkTitle">Permanent link</string>
     <string name="ChannelInviteLinkTitle">Invite Link</string>
     <string name="addBotRow">addBotRow</string>
+    <string name="addBotRowTop">addBotRowTop</string>
     <string name="GroupAddMembers">Add Members</string>
     <string name="ChannelAddSubscribers">Add Subscribers</string>
     <string name="LeaveChannel">Leave Channel</string>
